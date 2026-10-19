@@ -36,3 +36,11 @@ experiment, not verification of the old table.
 This review does not change experimental values, claim a new benchmark, or
 replace the archived arXiv document. It is maintained in the authorized fork;
 upstream `haailabs/ActiveACO` remains separately controlled.
+
+
+## Corrected source protocol (2026-10-19)
+
+[PAPER_REVISION.md](PAPER_REVISION.md) provides replacement methods/table-note
+text and an executable new paired-run protocol. The denominator of every new
+summary is computed from its actual graph IDs. This corrects the reporting
+procedure without claiming recovery of the absent historical table inputs.

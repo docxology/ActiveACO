@@ -6,6 +6,17 @@ from scipy import stats
 from scipy.stats import spearmanr
 import time
 
+def tour_distance(graph, tour):
+    """Count each Hamiltonian edge once for open or explicitly closed tours."""
+    route = [int(node) for node in tour]
+    if len(route) > 1 and route[-1] == route[0]:
+        route = route[:-1]
+    n = len(graph)
+    if len(route) != n or sorted(route) != list(range(n)):
+        raise ValueError("Tour must visit every graph node exactly once")
+    return float(sum(graph[route[i], route[(i + 1) % n]] for i in range(n)))
+
+
 def nearest_neighbor_tsp(graph):
     """
     Nearest Neighbor TSP algorithm.
@@ -27,7 +38,7 @@ def nearest_neighbor_tsp(graph):
     tour.append(tour[0])
     
     def calculate_tour_distance(graph, tour):
-        return sum(graph[tour[i]][tour[i+1]] for i in range(len(tour)-1))
+        return tour_distance(graph, tour)
     
     return tour, calculate_tour_distance(graph, tour)
 
@@ -53,7 +64,7 @@ def ant_colony_optimization(graph, num_ants=10, num_iterations=100, alpha=1.0, b
     best_path_length = float('inf')
 
     def calculate_path_length(path):
-        return sum(graph[path[i], path[i + 1]] for i in range(len(path) - 1)) + graph[path[-1], path[0]]
+        return tour_distance(graph, path)
 
     def choose_next_node(available_nodes, current_node):
         probabilities = [(pheromone[current_node, node] ** alpha) * ((1.0 / graph[current_node, node]) ** beta) for node in available_nodes]
@@ -107,7 +118,7 @@ def improved_aco_active_inference(graph, num_ants=10, num_iterations=100, alpha=
     best_path_length = float('inf')
 
     def calculate_path_length(path):
-        return sum(graph[path[i], path[i + 1]] for i in range(len(path) - 1)) + graph[path[-1], path[0]]
+        return tour_distance(graph, path)
 
     def choose_next_node(available_nodes, current_node, belief):
         probabilities = [(pheromone[current_node, node] ** alpha) * ((1.0 / graph[current_node, node]) ** beta) for node in available_nodes]
@@ -249,11 +260,14 @@ def generate_random_graphs(num_graphs, num_nodes):
         
         # Randomly set some edges to a small non-zero value (to vary density)
         mask = np.random.random(graph.shape) < np.random.uniform(0.3, 1)
-        graph = np.where(mask, graph, 0.01)  # Use 0.01 instead of 0
+        mask = np.triu(mask, 1)
+        mask = mask | mask.T
+        graph = np.where(mask, graph, 0.01)  # Symmetric positive off-diagonal weights.
         
         # Scale the graph to have weights mostly between 0.1 and 10
         scale_factor = 9.9 / np.percentile(graph[graph > 0], 95)
         graph = graph * scale_factor + 0.1
+        np.fill_diagonal(graph, 0.0)  # Scaling must not reintroduce self-loops.
         
         graphs.append(graph)
     

@@ -1,0 +1,55 @@
+import pytest
+from reproduce_comparison import run_comparison, encoded
+
+
+def test_paired_graph_membership_and_reproducible_results():
+    first = run_comparison([4, 5], 2, 123, 2, 2)
+    second = run_comparison([4, 5], 2, 123, 2, 2)
+    assert encoded(first) == encoded(second)
+    assert len(first["graphs"]) == 4
+    assert len(first["observations"]) == 12
+    for row in first["summary"]:
+        assert row["n_graphs"] == len(row["graph_ids"]) == 2
+        matching = [
+            r
+            for r in first["observations"]
+            if r["nodes"] == row["nodes"] and r["method"] == row["method"]
+        ]
+        assert [r["graph_id"] for r in matching] == row["graph_ids"]
+
+
+def test_single_graph_has_no_sample_standard_deviation():
+    assert all(
+        r["sample_std"] is None for r in run_comparison([4], 1, 1, 1, 1)["summary"]
+    )
+
+
+@pytest.mark.parametrize(
+    "nodes,graphs,ants,iterations",
+    [([2], 1, 1, 1), ([10, 10], 1, 1, 1), ([200], 100, 100, 1000)],
+)
+def test_resource_and_design_bounds(nodes, graphs, ants, iterations):
+    with pytest.raises(ValueError):
+        run_comparison(nodes, graphs, 1, ants, iterations)
+
+
+def test_open_and_closed_tours_do_not_count_a_nonzero_diagonal():
+    import numpy as np
+    from utils import tour_distance, improved_aco_active_inference
+
+    matrix = np.array([[99.0, 1.0, 3.0], [1.0, 88.0, 2.0], [3.0, 2.0, 77.0]])
+    assert tour_distance(matrix, [0, 1, 2]) == 6.0
+    assert tour_distance(matrix, [0, 1, 2, 0]) == 6.0
+    tour, length = improved_aco_active_inference(matrix, num_ants=1, num_iterations=1)
+    assert length == tour_distance(matrix, tour) == 6.0
+
+
+def test_generated_tsp_graphs_remain_symmetric_without_self_loops():
+    import numpy as np
+    from utils import generate_random_graphs
+
+    np.random.seed(20261019)
+    for matrix in generate_random_graphs(5, 6):
+        assert np.array_equal(matrix, matrix.T)
+        assert np.array_equal(matrix.diagonal(), np.zeros(6))
+        assert (matrix[~np.eye(6, dtype=bool)] > 0).all()
