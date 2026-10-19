@@ -1,0 +1,33 @@
+{
+  "historical_denominator_resolved": false,
+  "interpretation": "Small paired execution and denominator proof only; no historical replication, superiority, significance or generalization claim.",
+  "kind": "new seeded demonstration, not historical Table 1 reconstruction",
+  "parameters": {
+    "ants": 3,
+    "graphs": 3,
+    "iterations": 5,
+    "nodes": [
+      12,
+      24
+    ],
+    "seed": 20261019
+  },
+  "results_sha256": "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c",
+  "runtime": {
+    "packages": {
+      "matplotlib": "3.11.2",
+      "numpy": "1.26.4",
+      "pandas": "3.0.6",
+      "scipy": "1.17.1"
+    },
+    "python": "3.12.13"
+  },
+  "schema_version": "1.0",
+  "source_commit": "0fbd73409db9940200427827b5e8eb235db02ed1",
+  "source_sha256": {
+    "PAPER_REVISION.md": "b0d9d63c20d6b7cebdcefb0ca28fd789eeed0829754badade371d3ae351b1473",
+    "reproduce_comparison.py": "f96fe7fc3bedfc1f90827c10829f4598ca5d88a4f4ad6e58713ecb66055dc754",
+    "utils.py": "4aa0b718c1a1a777f70ca8737ebdd2cd7029529102febf077857d5fcb787ee17"
+  },
+  "source_worktree_clean": true
+}
