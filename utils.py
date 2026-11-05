@@ -98,7 +98,11 @@ def ant_colony_optimization(graph, num_ants=10, num_iterations=100, alpha=1.0, b
 
 def improved_aco_active_inference(graph, num_ants=10, num_iterations=100, alpha=1.0, beta=2.0, evaporation_rate=0.5, pheromone_deposit=1.0):
     """
-    Improved Ant Colony Optimization algorithm with Active Inference for TSP.
+    Legacy AI-labelled elitist ACO heuristic for TSP.
+
+    The common scalar belief cancels in normalized node probabilities. Extra
+    elitist reinforcement differs from basic ACO; no distinct action-dependent
+    inference or free-energy minimization mechanism is established here.
     
     Args:
         graph (np.ndarray): Adjacency matrix representing the graph.
@@ -123,17 +127,11 @@ def improved_aco_active_inference(graph, num_ants=10, num_iterations=100, alpha=
     def choose_next_node(available_nodes, current_node, belief):
         probabilities = [(pheromone[current_node, node] ** alpha) * ((1.0 / graph[current_node, node]) ** beta) for node in available_nodes]
         probabilities = np.array(probabilities)
-        probabilities *= belief  # Adjust probabilities based on belief
+        probabilities *= belief  # Common scalar cancels in normalization below
         probabilities /= probabilities.sum()
         return np.random.choice(available_nodes, p=probabilities)
 
-    def free_energy(belief_in_tour, path_length):
-        if 0 < belief_in_tour < 1:
-            uncertainty = -belief_in_tour * np.log(belief_in_tour) - (1 - belief_in_tour) * np.log(1 - belief_in_tour)
-        else:
-            uncertainty = 0
-        expected_energy = path_length  # Use actual path length as energy
-        return expected_energy + uncertainty
+    # The removed free_energy helper was never called; no update minimized it.
 
     for iteration in range(num_iterations):
         all_paths = []

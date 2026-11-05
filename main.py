@@ -1,3 +1,5 @@
+"""Legacy unseeded plotting sweep; use reproduce_comparison.py for bounded evidence."""
+
 from utils import (
     nearest_neighbor_tsp,
     ant_colony_optimization,
@@ -22,6 +24,12 @@ import pandas as pd
 import os
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--legacy-unseeded", action="store_true", help="Explicitly opt into the expensive historical sweep; not reproducible evidence")
+    args = parser.parse_args()
+    if not args.legacy_unseeded:
+        parser.error("Use reproduce_comparison.py; --legacy-unseeded opts into expensive historical defaults without provenance or paired inference")
     node_sizes = [200]  # List of node sizes
     num_graphs_list = [1000]  # List of number of graphs per node size
 

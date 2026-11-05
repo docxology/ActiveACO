@@ -53,3 +53,39 @@ def test_generated_tsp_graphs_remain_symmetric_without_self_loops():
         assert np.array_equal(matrix, matrix.T)
         assert np.array_equal(matrix.diagonal(), np.zeros(6))
         assert (matrix[~np.eye(6, dtype=bool)] > 0).all()
+
+
+@pytest.mark.parametrize("parameter,value", [("graphs", True), ("graphs", 2.0), ("seed", 1.0), ("seed", True), ("ants", False), ("iterations", 1.0)])
+def test_runner_refuses_noninteger_design_parameters(parameter, value):
+    parameters = dict(nodes=[4], graphs=1, seed=1, ants=1, iterations=1)
+    parameters[parameter] = value
+    with pytest.raises(ValueError):
+        run_comparison(**parameters)
+
+
+@pytest.mark.parametrize("mutation", ["asymmetry", "diagonal"])
+def test_runner_refuses_invalid_generated_graph_structure(monkeypatch, mutation):
+    import numpy as np
+    import reproduce_comparison
+
+    graph = np.ones((4, 4)) - np.eye(4)
+    if mutation == "asymmetry":
+        graph[0, 1] = 2
+    else:
+        graph[0, 0] = 1
+    monkeypatch.setattr(reproduce_comparison, "generate_random_graphs", lambda *_: [graph])
+    with pytest.raises(ValueError):
+        run_comparison([4], 1, 1, 1, 1)
+
+
+def test_new_results_declare_protocol_and_singleton_summary_is_auditable():
+    from evidence_validation import validate_results, METHODS
+    import hashlib
+
+    results = run_comparison([4], 1, 1, 1, 1)
+    assert results["schema_version"] == "2.0"
+    assert results["protocol_id"] == "seeded-paired-tsp-v2"
+    assert results["methods"] == list(METHODS)
+    receipt = {"schema_version": "2.0", "protocol_id": results["protocol_id"], "methods": results["methods"], "parameters": results["parameters"], "results_sha256": hashlib.sha256(encoded(results)).hexdigest(), "historical_denominator_resolved": False}
+    manifest = validate_results(results, receipt)
+    assert all(row["sample_std"] is None and row["n_graphs"] == 1 for row in manifest["summaries"])

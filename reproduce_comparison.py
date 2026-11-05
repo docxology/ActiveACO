@@ -14,6 +14,10 @@ import sys
 import tempfile
 
 import numpy as np
+from evidence_validation import (
+    METHODS, PROTOCOL, encoded, validate_matrix, validate_parameters, validate_results,
+    verify_sources,
+)
 from utils import (
     ant_colony_optimization,
     generate_random_graphs,
@@ -22,25 +26,8 @@ from utils import (
 )
 
 
-def encoded(value):
-    return (
-        json.dumps(value, sort_keys=True, indent=2, allow_nan=False) + "\n"
-    ).encode()
-
-
 def run_comparison(nodes, graphs, seed, ants, iterations):
-    if (
-        not nodes
-        or len(set(nodes)) != len(nodes)
-        or any(type(n) is not int or not 3 <= n <= 200 for n in nodes)
-        or not 1 <= graphs <= 100
-        or not 0 <= seed < 2**31
-        or not 1 <= ants <= 100
-        or not 1 <= iterations <= 1000
-        or graphs * sum(n * n for n in nodes) > 100000
-        or graphs * sum(nodes) * ants * iterations > 2000000
-    ):
-        raise ValueError("Comparison exceeds bounded graph/iteration limits")
+    parameters = validate_parameters(dict(nodes=nodes, graphs=graphs, seed=seed, ants=ants, iterations=iterations))
     inputs = []
     rows = []
     methods = {
@@ -54,13 +41,8 @@ def run_comparison(nodes, graphs, seed, ants, iterations):
             np.random.seed(graph_seed)
             random.seed(graph_seed)
             matrix = np.asarray(generate_random_graphs(1, n)[0], dtype="<f8")
-            if (
-                not np.isfinite(matrix).all()
-                or (matrix[~np.eye(n, dtype=bool)] <= 0).any()
-            ):
-                raise ValueError("Invalid nonpositive graph weights")
+            graph_hash = validate_matrix(matrix.tolist(), n)
             graph_id = f"n{n}-g{i:04d}"
-            graph_hash = hashlib.sha256(matrix.tobytes(order="C")).hexdigest()
             inputs.append(
                 {
                     "graph_id": graph_id,
@@ -109,7 +91,8 @@ def run_comparison(nodes, graphs, seed, ants, iterations):
             values = [
                 x["length"] for x in rows if x["nodes"] == n and x["method"] == label
             ]
-            assert len(values) == len(ids) == graphs
+            if len(values) != len(ids) or len(ids) != graphs:
+                raise ValueError("Incomplete paired summary membership")
             summary.append(
                 {
                     "nodes": n,
@@ -122,7 +105,9 @@ def run_comparison(nodes, graphs, seed, ants, iterations):
                     else None,
                 }
             )
-    return {"graphs": inputs, "observations": rows, "summary": summary}
+    results = {"schema_version": "2.0", "protocol_id": PROTOCOL, "methods": list(METHODS), "parameters": parameters, "graphs": inputs, "observations": rows, "summary": summary}
+    validate_results(results, {"schema_version": "2.0", "protocol_id": PROTOCOL, "methods": list(METHODS), "parameters": parameters, "results_sha256": hashlib.sha256(encoded(results)).hexdigest(), "historical_denominator_resolved": False})
+    return results
 
 
 def main():
@@ -145,8 +130,15 @@ def main():
         parser.error("Use a new external output directory with real existing ancestors")
     sources = {
         name: hashlib.sha256((root / name).read_bytes()).hexdigest()
-        for name in ("utils.py", "reproduce_comparison.py", "PAPER_REVISION.md")
+        for name in ("utils.py", "reproduce_comparison.py", "PAPER_REVISION.md", "evidence_validation.py")
     }
+    try:
+        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True, stdin=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=10).strip()
+        clean = not subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True, stdin=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=10).strip()
+    except (OSError, subprocess.SubprocessError):
+        parser.error("Producer Git identity unavailable")
+    if not clean:
+        parser.error("Commit the producer source before recording a commit-bound run; use run_comparison for bounded development checks")
     try:
         results = run_comparison(
             args.nodes, args.graphs, args.seed, args.ants, args.iterations
@@ -158,14 +150,10 @@ def main():
         for n, h in sources.items()
     ):
         raise ValueError("Sources changed during comparison")
-    head = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=root, text=True
-    ).strip()
-    clean = not subprocess.check_output(
-        ["git", "status", "--porcelain"], cwd=root, text=True
-    ).strip()
     receipt = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
+        "protocol_id": PROTOCOL,
+        "methods": list(METHODS),
         "kind": "new seeded demonstration, not historical Table 1 reconstruction",
         "source_commit": head,
         "source_worktree_clean": clean,
@@ -182,6 +170,7 @@ def main():
         "historical_denominator_resolved": False,
         "interpretation": "Small paired execution and denominator proof only; no historical replication, superiority, significance or generalization claim.",
     }
+    verify_sources(receipt, root)
     with tempfile.TemporaryDirectory(
         prefix=".comparison-", dir=destination.parent
     ) as temp:

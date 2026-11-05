@@ -1,29 +1,65 @@
 # Active ACO
 
-## Overview
-This repository includes implementations of various optimization algorithms for the Traveling Salesman Problem (TSP):
-- Nearest Neighbor TSP
-- Ant Colony Optimization (ACO)
-- Improved ACO with Active Inference
+This repository explores nearest-neighbor TSP, basic ant-colony optimization,
+and a legacy AI-labelled elitist ACO heuristic. The scalar belief in the labelled
+routine cancels when node-choice weights are normalized; its extra elitist
+reinforcement is a confound. The label does not establish a distinct active-
+inference mechanism or a measured advantage.
 
-Active inference is based on the concept that perception is an active process, involving the minimization of free energy and continuous updating of beliefs based on environmental interactions. This repository explores ACO variants on randomly generated graphs. Comparative or inferential claims require identified runs; the active-inference label does not establish a distinct inferred mechanism. See [the corrected paper protocol](PAPER_REVISION.md).
+## Bounded seeded comparison
 
-## Files
-- `main.py`: Script to run experiments, compare methods, and generate plots.
-- `utils.py`: Contains the implementations of the optimization algorithms and utility functions.
-- `visualization.py`: Functions for generating plots to visualize the results.
+Use an isolated environment with NumPy, SciPy, pandas, matplotlib and pytest.
+Do not replace a historical environment to match a new execution. The retained
+October producer receipt records its own exact versions.
 
-## Usage
-Run `main.py` to generate graphs and compare the algorithms. Results are presented both numerically in tables and visually in plots.
+From a clean committed source checkout, create a new external output directory:
 
-## Requirements
-Ensure all dependencies are installed:
-- numpy
-- pandas
-- matplotlib
-- seaborn
-- scipy
+```sh
+python reproduce_comparison.py --nodes 12 24 --graphs 3 --seed 20261019 \
+  --ants 3 --iterations 5 --output-dir /new/external/comparison
+```
 
-For a bounded new seeded comparison with raw inputs, tours, exact denominators
-and source/runtime receipts, use `reproduce_comparison.py` as documented in
-[PAPER_REVISION.md](PAPER_REVISION.md). Historical figure summaries remain archived.
+This is a small paired execution demonstration, not a reconstruction of the
+paper's historical Table 1 or a significance, superiority or timing study.
+Raw matrices, seeds, tours, independent scores and exact graph memberships are
+retained. New results declare the protocol, method set and parameters. A
+commit-bound producer receipt requires a clean source checkout.
+
+## Audit existing saved evidence without rerunning algorithms
+
+```sh
+python evidence_validation.py \
+  --results evidence/2026-10-19-comparison/results.json \
+  --receipt evidence/2026-10-19-comparison/receipt.json \
+  --output-dir /new/external/evidence-audit
+```
+
+Omit `--output-dir` for validation only. No network or optimizer execution is
+needed. The validator checks matrix structure and hashes, complete paired
+membership, method seeds, tours, scores, means and sample standard deviations.
+It verifies producer file hashes at the receipt's exact Git commit and refuses
+missing objects or mismatches. It does not require those historical hashes to
+match today's source. The exporter is identified separately in `membership.json`.
+Graph IDs are qualified by the results hash to avoid cross-run ambiguity.
+
+The reviewed [saved-run audit](evidence/2026-11-05-audit/table.md) reports three
+graphs per node-size/method cell, six distinct graphs and eighteen observations.
+The original [October evidence](evidence/2026-10-19-comparison/README.md) is
+preserved. See [PAPER_REVISION.md](PAPER_REVISION.md) for unresolved paper claims.
+
+## Legacy outputs and verification
+
+`main.py`, `visualization.py` and `Figures_*` retain the historical unseeded
+plotting workflow. Its expensive default sweep now requires explicit
+`--legacy-unseeded` opt-in. Its archived captions and unpaired statistical
+procedures are not the seeded protocol and do not resolve the paper denominator.
+Do not run that sweep as a smoke test.
+
+```sh
+python -m pytest -q test_reproducible_comparison.py test_evidence_validation.py
+```
+
+The bounded tests establish software/evidence-accounting behavior only. Any
+larger study needs a declared design, retained failures and observations, an
+appropriate paired analysis and separately reviewed scientific interpretation.
+The arXiv record and original upstream remain separate publication authorities.

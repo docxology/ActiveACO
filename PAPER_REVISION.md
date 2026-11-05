@@ -58,3 +58,37 @@ the diagonal after scaling. Regression tests cover nonzero input diagonals,
 closed/open equivalence, symmetric generation, and valid tours. These source
 corrections apply to new executions and do not retroactively correct archived
 tables without their raw inputs.
+
+
+## Saved-evidence validation follow-up (2026-11-05)
+
+The retained October demonstration can now be audited without a new optimization
+run. `evidence_validation.py` checks the full matrices, canonical float64 hashes,
+expected graph IDs and seeds, one observation per graph/method, closed tours and
+independently recomputed lengths. Every summary denominator, membership list,
+mean and sample standard deviation is checked against those observations. Missing,
+duplicate or foreign members fail rather than silently changing the denominator.
+Singleton cells retain no estimated sample standard deviation.
+
+The [dated descriptive table](evidence/2026-11-05-audit/table.md) and companion
+membership manifest concern only six retained graphs (three each at 12 and 24
+nodes), eighteen method observations and six summary cells. All three methods
+share graph membership, while their recorded method seeds differ. Run-qualified
+graph identities include the result SHA-256. No historical sample size, p-value,
+timing, superiority or population-scale performance is inferred.
+
+The October result and receipt bytes remain unchanged. Their producer commit is
+`0fbd73409db9940200427827b5e8eb235db02ed1`; the current validator reads and hashes
+the named files at that exact Git object. Today's validator/exporter identity is
+recorded separately. A missing historical object or source-hash mismatch blocks
+export. This verifies identified bytes and accounting, not an independently
+reexecuted historical runtime or scientific validity.
+
+Future runs declare version 2 of the seed/method protocol explicitly and retain
+their own committed source and dependency identities. Source recording refuses a
+dirty producer checkout; every Git reader has closed stdin and a bounded timeout.
+The old unused `free_energy` helper was never called and has been removed; no
+free-energy minimization claim follows from the legacy heuristic. Its numerical
+choice and reinforcement rules are retained. `main.py` is marked as a historical
+unseeded sweep and requires an explicit opt-in, preventing accidental large runs
+through the primary usage instructions.

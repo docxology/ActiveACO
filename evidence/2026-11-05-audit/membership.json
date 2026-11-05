@@ -1,0 +1,151 @@
+{
+  "historical_denominator_resolved": false,
+  "kind": "saved paired evidence audit; not historical Table 1 reconstruction",
+  "methods": [
+    "nearest_neighbor",
+    "basic_aco",
+    "ai_labelled_elitist_aco"
+  ],
+  "n_graphs": 6,
+  "n_observations": 18,
+  "parameters": {
+    "ants": 3,
+    "graphs": 3,
+    "iterations": 5,
+    "nodes": [
+      12,
+      24
+    ],
+    "seed": 20261019
+  },
+  "producer_runtime": {
+    "packages": {
+      "matplotlib": "3.11.2",
+      "numpy": "1.26.4",
+      "pandas": "3.0.6",
+      "scipy": "1.17.1"
+    },
+    "python": "3.12.13"
+  },
+  "producer_source_sha256": {
+    "PAPER_REVISION.md": "b0d9d63c20d6b7cebdcefb0ca28fd789eeed0829754badade371d3ae351b1473",
+    "reproduce_comparison.py": "f96fe7fc3bedfc1f90827c10829f4598ca5d88a4f4ad6e58713ecb66055dc754",
+    "utils.py": "4aa0b718c1a1a777f70ca8737ebdd2cd7029529102febf077857d5fcb787ee17"
+  },
+  "protocol_id": "legacy October 2026 seed/method protocol",
+  "receipt_sha256": "8827e606c35d409dbaea374829596a7e4cfcb965d41c7ea1fa86db1468fd7895",
+  "results_schema": "legacy-unversioned",
+  "results_sha256": "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c",
+  "schema_version": "1.0",
+  "source_binding_verified": true,
+  "source_commit": "0fbd73409db9940200427827b5e8eb235db02ed1",
+  "summaries": [
+    {
+      "graph_ids": [
+        "n12-g0000",
+        "n12-g0001",
+        "n12-g0002"
+      ],
+      "mean_length": 21.147753197170925,
+      "method": "nearest_neighbor",
+      "n_graphs": 3,
+      "nodes": 12,
+      "qualified_graph_ids": [
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0000",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0001",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0002"
+      ],
+      "sample_std": 13.467914581722853
+    },
+    {
+      "graph_ids": [
+        "n12-g0000",
+        "n12-g0001",
+        "n12-g0002"
+      ],
+      "mean_length": 12.224308424998009,
+      "method": "basic_aco",
+      "n_graphs": 3,
+      "nodes": 12,
+      "qualified_graph_ids": [
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0000",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0001",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0002"
+      ],
+      "sample_std": 16.864444528147573
+    },
+    {
+      "graph_ids": [
+        "n12-g0000",
+        "n12-g0001",
+        "n12-g0002"
+      ],
+      "mean_length": 12.59804605907511,
+      "method": "ai_labelled_elitist_aco",
+      "n_graphs": 3,
+      "nodes": 12,
+      "qualified_graph_ids": [
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0000",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0001",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n12-g0002"
+      ],
+      "sample_std": 17.90911885495903
+    },
+    {
+      "graph_ids": [
+        "n24-g0000",
+        "n24-g0001",
+        "n24-g0002"
+      ],
+      "mean_length": 63.36189884412873,
+      "method": "nearest_neighbor",
+      "n_graphs": 3,
+      "nodes": 24,
+      "qualified_graph_ids": [
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0000",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0001",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0002"
+      ],
+      "sample_std": 43.826899930079556
+    },
+    {
+      "graph_ids": [
+        "n24-g0000",
+        "n24-g0001",
+        "n24-g0002"
+      ],
+      "mean_length": 65.86787887577033,
+      "method": "basic_aco",
+      "n_graphs": 3,
+      "nodes": 24,
+      "qualified_graph_ids": [
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0000",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0001",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0002"
+      ],
+      "sample_std": 52.252218724133364
+    },
+    {
+      "graph_ids": [
+        "n24-g0000",
+        "n24-g0001",
+        "n24-g0002"
+      ],
+      "mean_length": 69.49895765183703,
+      "method": "ai_labelled_elitist_aco",
+      "n_graphs": 3,
+      "nodes": 24,
+      "qualified_graph_ids": [
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0000",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0001",
+        "74423dd07c8367947554467f2f2c67910e7e9879ff1cad7e6426f3250d67349c:n24-g0002"
+      ],
+      "sample_std": 55.22796763429562
+    }
+  ],
+  "validator": {
+    "name": "evidence_validation.py",
+    "python": "3.11.17",
+    "sha256": "db40d3b3106f365245067b5eae04b96c6a25e5958dc85018de2a9e73aa631fef"
+  }
+}
