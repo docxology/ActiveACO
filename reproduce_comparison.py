@@ -27,6 +27,17 @@ from utils import (
 
 
 def run_comparison(nodes, graphs, seed, ants, iterations):
+    """Run a serial seeded comparison without advancing caller RNG streams."""
+    python_state = random.getstate()
+    numpy_state = np.random.get_state(legacy=False)
+    try:
+        return _run_comparison(nodes, graphs, seed, ants, iterations)
+    finally:
+        random.setstate(python_state)
+        np.random.set_state(numpy_state)
+
+
+def _run_comparison(nodes, graphs, seed, ants, iterations):
     parameters = validate_parameters(dict(nodes=nodes, graphs=graphs, seed=seed, ants=ants, iterations=iterations))
     inputs = []
     rows = []

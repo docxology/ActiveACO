@@ -25,6 +25,13 @@ Raw matrices, seeds, tours, independent scores and exact graph memberships are
 retained. New results declare the protocol, method set and parameters. A
 commit-bound producer receipt requires a clean source checkout.
 
+When imported, `run_comparison(nodes, graphs, seed, ants, iterations)` restores
+the caller's Python and NumPy global random-generator states after success or
+failure. This is a serial-use guarantee: the comparison still uses those global
+generators while active, so concurrent RNG consumers require separate processes.
+Method seeds, returned result fields and the retained historical evidence are
+unchanged.
+
 ## Audit existing saved evidence without rerunning algorithms
 
 ```sh

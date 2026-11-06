@@ -89,3 +89,56 @@ def test_new_results_declare_protocol_and_singleton_summary_is_auditable():
     receipt = {"schema_version": "2.0", "protocol_id": results["protocol_id"], "methods": results["methods"], "parameters": results["parameters"], "results_sha256": hashlib.sha256(encoded(results)).hexdigest(), "historical_denominator_resolved": False}
     manifest = validate_results(results, receipt)
     assert all(row["sample_std"] is None and row["n_graphs"] == 1 for row in manifest["summaries"])
+
+
+
+def _next_caller_random_values():
+    import random
+    import numpy as np
+
+    return {
+        "python": [random.random() for _ in range(4)],
+        "numpy": np.random.random(4).tolist(),
+    }
+
+
+@pytest.fixture
+def caller_random_streams():
+    import random
+    import numpy as np
+
+    python_state = random.getstate()
+    numpy_state = np.random.get_state(legacy=False)
+    try:
+        random.seed(45928)
+        np.random.seed(4321)
+        expected = _next_caller_random_values()
+        random.seed(45928)
+        np.random.seed(4321)
+        yield expected
+    finally:
+        random.setstate(python_state)
+        np.random.set_state(numpy_state)
+
+
+@pytest.mark.parametrize("stream", ["python", "numpy"])
+def test_run_comparison_preserves_caller_rng_on_success(caller_random_streams, stream):
+    run_comparison([4], 1, 123, 1, 1)
+    assert _next_caller_random_values()[stream] == caller_random_streams[stream]
+
+
+@pytest.mark.parametrize("stream", ["python", "numpy"])
+def test_run_comparison_preserves_caller_rng_on_failure(
+    caller_random_streams, stream, monkeypatch
+):
+    import random
+
+    def unavailable_random_start(*args, **kwargs):
+        raise RuntimeError("controlled random source failure")
+
+    # Fail at the random-source boundary in basic ACO, after graph generation
+    # and the nearest-neighbor observation have completed.
+    monkeypatch.setattr(random, "randint", unavailable_random_start)
+    with pytest.raises(RuntimeError, match="controlled random source failure"):
+        run_comparison([4], 1, 123, 1, 1)
+    assert _next_caller_random_values()[stream] == caller_random_streams[stream]
