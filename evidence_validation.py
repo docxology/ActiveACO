@@ -218,6 +218,20 @@ def render_table(manifest):
     return "\n".join(lines)
 
 
+def publish_output_directory(staged, destination, *, completion):
+    """Reserve a fresh directory and expose complete files with the receipt last."""
+    files = sorted(staged.iterdir())
+    receipt = staged / completion
+    if receipt not in files or any(not path.is_file() or path.is_symlink() for path in files):
+        raise ValueError("Invalid staged output")
+    try:
+        destination.mkdir(mode=0o700)
+    except FileExistsError as exc:
+        raise ValueError("Output already exists") from exc
+    for source in [path for path in files if path != receipt] + [receipt]:
+        os.link(source, destination / source.name)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", type=Path, required=True)
@@ -235,8 +249,7 @@ def main(argv=None):
                 folder = Path(temporary)
                 (folder / "membership.json").write_bytes(encoded(manifest))
                 (folder / "table.md").write_text(render_table(manifest), encoding="utf-8")
-                _require(not destination.exists(), "Output appeared during validation")
-                folder.rename(destination)
+                publish_output_directory(folder, destination, completion="membership.json")
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     print(json.dumps({"graphs": manifest["n_graphs"], "observations": manifest["n_observations"], "results_sha256": manifest["results_sha256"], "source_binding_verified": manifest["source_binding_verified"]}))

@@ -15,7 +15,8 @@ import tempfile
 
 import numpy as np
 from evidence_validation import (
-    METHODS, PROTOCOL, encoded, validate_matrix, validate_parameters, validate_results,
+    METHODS, PROTOCOL, encoded, publish_output_directory, validate_matrix,
+    validate_parameters, validate_results,
     verify_sources,
 )
 from utils import (
@@ -188,9 +189,10 @@ def main():
         folder = Path(temp)
         (folder / "results.json").write_bytes(encoded(results))
         (folder / "receipt.json").write_bytes(encoded(receipt))
-        if destination.exists():
-            raise ValueError("Output appeared during computation")
-        folder.rename(destination)
+        try:
+            publish_output_directory(folder, destination, completion="receipt.json")
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
     print(
         json.dumps(
             {

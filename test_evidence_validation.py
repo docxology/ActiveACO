@@ -244,3 +244,46 @@ def test_legacy_main_requires_explicit_expensive_workflow_opt_in(tmp_path):
     assert result.returncode == 2
     assert "--legacy-unseeded" in result.stderr
     assert not list(tmp_path.glob("Figures_*"))
+
+
+def test_publish_refuses_a_destination_created_during_publication(tmp_path, monkeypatch):
+    staged = tmp_path / "stage"
+    staged.mkdir()
+    (staged / "results.json").write_text("{}")
+    (staged / "receipt.json").write_text("{}")
+    destination = tmp_path / "output"
+    mkdir = Path.mkdir
+    competing_inode = None
+
+    def racing_mkdir(path, *args, **kwargs):
+        nonlocal competing_inode
+        if path == destination:
+            mkdir(path)
+            competing_inode = path.stat().st_ino
+        return mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", racing_mkdir)
+    with pytest.raises(ValueError, match="Output already exists"):
+        api().publish_output_directory(staged, destination, completion="receipt.json")
+    assert destination.stat().st_ino == competing_inode
+    assert list(destination.iterdir()) == []
+
+
+def test_publish_keeps_completion_absent_after_a_link_failure(tmp_path, monkeypatch):
+    staged = tmp_path / "stage"
+    staged.mkdir()
+    (staged / "results.json").write_text("{}")
+    (staged / "receipt.json").write_text("{}")
+    destination = tmp_path / "output"
+    link = api().os.link
+
+    def fail_receipt(source, target):
+        if target.name == "receipt.json":
+            raise OSError("simulated publication failure")
+        link(source, target)
+
+    monkeypatch.setattr(api().os, "link", fail_receipt)
+    with pytest.raises(OSError, match="simulated publication failure"):
+        api().publish_output_directory(staged, destination, completion="receipt.json")
+    assert (destination / "results.json").read_text() == "{}"
+    assert not (destination / "receipt.json").exists()

@@ -12,7 +12,11 @@ Use an isolated environment with NumPy, SciPy, pandas, matplotlib and pytest.
 Do not replace a historical environment to match a new execution. The retained
 October producer receipt records its own exact versions.
 
-From a clean committed source checkout, create a new external output directory:
+From a clean committed source checkout, choose a new external output directory.
+Both commands reserve the directory exclusively and publish the result files before
+the completion record (`receipt.json` for comparison and `membership.json` for
+audit). If publication is interrupted, inspect the incomplete directory and use
+a fresh destination for the next run:
 
 ```sh
 python reproduce_comparison.py --nodes 12 24 --graphs 3 --seed 20261019 \
